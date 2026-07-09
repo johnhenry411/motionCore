@@ -39,9 +39,17 @@ services:
       # For development, use: SOCKETCLUSTER_OPTIONS: '{"origins":"http://localhost:*"}'
 
   scheduler:
-    image: fleetbase/fleetbase-api:latest
-    command: ["go-crond", "--verbose", "root:./crontab"]
     restart: unless-stopped
+    build:
+      context: ./
+      dockerfile: docker/Dockerfile
+      target: scheduler-dev
+      args:
+        ENVIRONMENT: development
+    command: ["go-crond", "--verbose", "root:./crontab"]
+    volumes:
+      - ./api/.env:/fleetbase/api/.env
+      - ./api/storage/app:/fleetbase/api/storage/app
     environment:
       DATABASE_URL: "mysql://root@database/fleetbase"
       QUEUE_CONNECTION: redis
@@ -54,14 +62,22 @@ services:
       - cache
 
   queue:
-    image: fleetbase/fleetbase-api:latest
-    command: ["php", "artisan", "queue:work"]
     restart: unless-stopped
+    build:
+      context: ./
+      dockerfile: docker/Dockerfile
+      target: events-dev
+      args:
+        ENVIRONMENT: development
+    command: ["php", "artisan", "queue:work"]
     healthcheck:
       test: ["CMD", "php", "artisan", "queue:status"]
       interval: 30s
       timeout: 10s
       retries: 3
+    volumes:
+      - ./api/.env:/fleetbase/api/.env
+      - ./api/storage/app:/fleetbase/api/storage/app
     environment:
       DATABASE_URL: "mysql://root@database/fleetbase"
       QUEUE_CONNECTION: redis
@@ -87,7 +103,12 @@ services:
 
   application:
     restart: unless-stopped
-    image: fleetbase/fleetbase-api:latest
+    build:
+      context: ./
+      dockerfile: docker/Dockerfile
+      target: app-dev
+      args:
+        ENVIRONMENT: development
     volumes:
       - ./api/.env:/fleetbase/api/.env
       - ./api/storage/app:/fleetbase/api/storage/app

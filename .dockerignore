@@ -1,10 +1,15 @@
 # Ignore files not needed for docker to build microservice image
 node_modules/*
+**/node_modules/*
+console/dist/*
+api/vendor/*
+api/storage/app/*
 postgres/*
 typings/*
 */.git*
 *.git*
 *.git
+**/.git
 *.md
 !gulpfile.js
 ci/

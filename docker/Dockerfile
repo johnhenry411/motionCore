@@ -75,7 +75,7 @@ ENV QUEUE_CONNECTION=redis
 ENV CADDYFILE_PATH=/fleetbase/Caddyfile
 ENV CONSOLE_PATH=/fleetbase/console
 ENV OCTANE_SERVER=frankenphp
-ENV FLEETBASE_VERSION=0.7.48
+ENV FLEETBASE_VERSION=0.7.51
 
 # Set environment
 ARG ENVIRONMENT=production
@@ -106,11 +106,20 @@ RUN if [ -n "$GITHUB_AUTH_KEY" ]; then echo "{\"github-oauth\": {\"github.com\":
 # Prepare composer cache directory
 RUN mkdir -p /var/www/.cache/composer && chown -R www-data:www-data /var/www/.cache/composer
 
+# Copy local package sources referenced by composer's "path" repositories
+COPY --chown=www-data:www-data ./packages /fleetbase/packages
+
 # Optimize Composer Dependency Installation
 COPY --chown=www-data:www-data ./api/composer.json ./api/composer.lock /fleetbase/api/
 
 # Pre-install Composer dependencies
-RUN su www-data -s /bin/sh -c "composer install --no-scripts --optimize-autoloader --no-dev --no-cache"
+# fleetbase/core-api, ai, fleetops-api, customer-portal-api, storefront-api, ledger-api,
+# valhalla-api, and vroom-api are resolved via local "path" repositories (see api/composer.json)
+# from ./packages, so their sources are always built from what's checked out locally.
+# `composer install` alone would use composer.lock's recorded dist (a public Packagist/GitHub
+# zipball) instead of the local path, so these packages are always re-resolved via a scoped
+# `composer update` to guarantee the local source is what actually gets built.
+RUN su www-data -s /bin/sh -c "composer update fleetbase/core-api fleetbase/ai fleetbase/fleetops-api fleetbase/customer-portal-api fleetbase/storefront-api fleetbase/ledger-api fleetbase/valhalla-api fleetbase/vroom-api --with-dependencies --no-scripts --optimize-autoloader --no-dev --no-cache"
 
 # Setup application
 COPY --chown=www-data:www-data ./api /fleetbase/api

@@ -1,13 +1,6 @@
-[submodule "packages/storefront"]
-	path = packages/storefront
-	url = git@github.com:fleetbase/storefront.git
 [submodule "packages/pallet"]
 	path = packages/pallet
 	url = git@github.com:fleetbase/pallet.git
-[submodule "packages/core-api"]
-	path = packages/core-api
-	url = git@github.com:fleetbase/core-api.git
-	branch = main
 [submodule "packages/iam-engine"]
 	path = packages/iam-engine
 	url = git@github.com:fleetbase/iam-engine.git
@@ -25,6 +18,3 @@
 [submodule "packages/registry-bridge"]
 	path = packages/registry-bridge
 	url = git@github.com:fleetbase/registry-bridge.git
-[submodule "packages/ledger"]
-	path = packages/ledger
-	url = git@github.com:fleetbase/ledger.git

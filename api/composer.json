@@ -18,14 +18,15 @@
         }
     ],
     "require": {
-        "php": ">=8.0 <=8.2.31",
+        "php": ">=8.0 <8.3",
         "appstract/laravel-opcache": "^4.0",
         "fleetbase/core-api": "^1.6.53",
-        "fleetbase/fleetops-api": "^0.6.56",
+        "fleetbase/ai": "^0.0.2",
+        "fleetbase/fleetops-api": "^0.6.57",
         "fleetbase/registry-bridge": "^0.1.9",
-        "fleetbase/customer-portal-api": "^0.0.11",
+        "fleetbase/customer-portal-api": "^0.0.12",
         "fleetbase/storefront-api": "^0.4.16",
-        "fleetbase/ledger-api": "^0.0.6",
+        "fleetbase/ledger-api": "^0.0.7",
         "fleetbase/valhalla-api": "^0.0.4",
         "fleetbase/vroom-api": "^0.0.4",
         "guzzlehttp/guzzle": "^7.0.1",
@@ -55,6 +56,60 @@
     "repositories": [
         {
             "type": "composer",
+            "url": "https://packagist.org",
+            "exclude": [
+                "fleetbase/core-api",
+                "fleetbase/ai",
+                "fleetbase/fleetops-api",
+                "fleetbase/customer-portal-api",
+                "fleetbase/storefront-api",
+                "fleetbase/ledger-api",
+                "fleetbase/valhalla-api",
+                "fleetbase/vroom-api"
+            ]
+        },
+        {
+            "type": "path",
+            "url": "../packages/core-api",
+            "options": { "symlink": false }
+        },
+        {
+            "type": "path",
+            "url": "../packages/ai",
+            "options": { "symlink": false }
+        },
+        {
+            "type": "path",
+            "url": "../packages/fleetops",
+            "options": { "symlink": false }
+        },
+        {
+            "type": "path",
+            "url": "../packages/customer-portal",
+            "options": { "symlink": false }
+        },
+        {
+            "type": "path",
+            "url": "../packages/storefront",
+            "options": { "symlink": false }
+        },
+        {
+            "type": "path",
+            "url": "../packages/ledger",
+            "options": { "symlink": false }
+        },
+        {
+            "type": "path",
+            "url": "../packages/valhalla",
+            "options": { "symlink": false }
+        },
+        {
+            "type": "path",
+            "url": "../packages/vroom",
+            "options": { "symlink": false }
+        },
+        {
+            "type": "composer",
             "url": "https://registry.fleetbase.io",
             "canonical": false,
             "exclude": [
@@ -63,6 +118,7 @@
                 "fleetbase/storefront-api",
                 "fleetbase/ledger-api",
                 "fleetbase/customer-portal-api",
+                "fleetbase/ai",
                 "fleetbase/valhalla-api",
                 "fleetbase/vroom-api"
             ]

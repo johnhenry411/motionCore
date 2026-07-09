@@ -86,6 +86,11 @@ Router.map(function () {
             });
         });
 
+        this.mount('@fleetbase/ai-engine', {
+            as: 'ai',
+            path: 'ai'
+        });
+
         this.mount('@fleetbase/dev-engine', {
             as: 'developers',
             path: 'developers'
@@ -126,10 +131,11 @@ Router.map(function () {
             path: 'vroom'
         });
     });
-    this.route('catch', { path: '/*' });
 
     this.mount('@fleetbase/customer-portal-engine', {
         as: 'customer-portal',
         path: 'customer-portal'
     });
+
+    this.route('catch', { path: '/*' });
 });

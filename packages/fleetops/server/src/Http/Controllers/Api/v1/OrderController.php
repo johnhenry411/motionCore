@@ -1555,12 +1555,12 @@ class OrderController extends Controller
             return response()->apiError($errorMessage, 422);
         }
 
-        // Determine storage disk & bucket
+        // Determine storage disk & bucket. Note: config()'s default argument only
+        // applies when the key is entirely absent - if it exists but is explicitly
+        // null (e.g. 'bucket' => env('AWS_BUCKET') with AWS_BUCKET unset), config()
+        // returns that null rather than falling back, so this must use ?? instead.
         $disk        = $request->input('disk', config('filesystems.default'));
-        $bucket      = config(
-            "filesystems.disks.{$disk}.bucket",
-            config('filesystems.disks.s3.bucket', '')
-        );
+        $bucket      = config("filesystems.disks.{$disk}.bucket") ?? config('filesystems.disks.s3.bucket') ?? '';
 
         // Collect uploads & Base64 strings
         /** @var UploadedFile[] $rawInputs */

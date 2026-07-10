@@ -919,7 +919,7 @@ class OrderController extends FleetOpsController
         }
 
         $disk    = $request->input('disk', config('filesystems.default'));
-        $bucket  = $request->input("filesystems.disks.{$disk}.bucket", config('filesystems.disks.s3.bucket'));
+        $bucket  = config("filesystems.disks.{$disk}.bucket", config('filesystems.disks.s3.bucket', ''));
         $remarks = $request->input('remarks', 'Verified by Photo');
         $data    = $metadata;
 

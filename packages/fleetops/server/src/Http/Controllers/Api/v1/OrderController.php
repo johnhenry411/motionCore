@@ -1557,9 +1557,9 @@ class OrderController extends Controller
 
         // Determine storage disk & bucket
         $disk        = $request->input('disk', config('filesystems.default'));
-        $bucket      = $request->input(
+        $bucket      = config(
             "filesystems.disks.{$disk}.bucket",
-            config('filesystems.disks.s3.bucket')
+            config('filesystems.disks.s3.bucket', '')
         );
 
         // Collect uploads & Base64 strings

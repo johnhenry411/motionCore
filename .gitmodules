@@ -18,3 +18,9 @@
 [submodule "packages/registry-bridge"]
 	path = packages/registry-bridge
 	url = git@github.com:fleetbase/registry-bridge.git
+[submodule "packages/valhalla"]
+	path = packages/valhalla
+	url = git@github.com:fleetbase/valhalla.git
+[submodule "packages/vroom"]
+	path = packages/vroom
+	url = git@github.com:fleetbase/vroom.git

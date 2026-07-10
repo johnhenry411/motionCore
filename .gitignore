@@ -42,8 +42,6 @@ packages/countries
 packages/fliit
 packages/samsara
 packages/solid*
-packages/valhalla
-packages/vroom
 solid
 verdaccio
 # asdf

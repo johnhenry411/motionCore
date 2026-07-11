@@ -16,6 +16,7 @@ class OrderObserver
     public function created(Order $order)
     {
         $this->invalidateCache($order);
+        $this->applyDriverAssignmentAcceptanceGateOnCreate($order);
     }
 
     /**
@@ -30,6 +31,7 @@ class OrderObserver
     public function updating(Order $order): void
     {
         $this->ensureOrderStarted($order);
+        $this->applyDriverAssignmentAcceptanceGate($order);
     }
 
     /**
@@ -111,5 +113,70 @@ class OrderObserver
                 $order->started = true;
             }
         }
+    }
+
+    /**
+     * Gates newly-set direct driver assignments behind a pending-acceptance
+     * state, so the driver must explicitly accept/decline before the order
+     * can proceed. Ad-hoc broadcast orders and explicit silent assignments
+     * (Order::$skipAssignmentAcceptance) keep today's instant-assign behavior.
+     *
+     * Runs during "updating" so the mutation is persisted as part of the same
+     * save the caller already triggered (console PATCH, Order::assignDriver(),
+     * or the Orchestration engine's direct writes to driver_assigned_uuid).
+     *
+     * @param Order $order The order being evaluated for a driver assignment change
+     */
+    protected function applyDriverAssignmentAcceptanceGate(Order $order): void
+    {
+        // Accept/decline endpoints set a terminal status explicitly in the same
+        // save as clearing/confirming the assignment -- don't override those.
+        if ($order->isDirty('driver_assignment_status') && in_array($order->driver_assignment_status, ['accepted', 'declined'], true)) {
+            return;
+        }
+
+        if (!$order->isDirty('driver_assigned_uuid')) {
+            return;
+        }
+
+        if (empty($order->driver_assigned_uuid)) {
+            $order->driver_assignment_status         = null;
+            $order->driver_assignment_requested_at    = null;
+            $order->driver_assignment_responded_at    = null;
+
+            return;
+        }
+
+        if ($order->adhoc === true || $order->skipAssignmentAcceptance === true) {
+            $order->driver_assignment_status = null;
+
+            return;
+        }
+
+        $order->driver_assignment_status       = 'pending';
+        $order->driver_assignment_requested_at = now();
+        $order->driver_assignment_responded_at = null;
+    }
+
+    /**
+     * Mirrors applyDriverAssignmentAcceptanceGate() for orders created with a
+     * driver already assigned (e.g. OrderController::create() accepts a
+     * `driver` param and sets driver_assigned_uuid before the model exists) --
+     * "updating" never fires for a brand new model, so this gate and the
+     * driver's notification must be applied explicitly here instead.
+     *
+     * @param Order $order The order that was just created
+     */
+    protected function applyDriverAssignmentAcceptanceGateOnCreate(Order $order): void
+    {
+        if (empty($order->driver_assigned_uuid) || $order->adhoc === true || $order->skipAssignmentAcceptance === true) {
+            return;
+        }
+
+        $order->driver_assignment_status       = 'pending';
+        $order->driver_assignment_requested_at = now();
+        $order->save();
+
+        $order->notifyDriverAssigned();
     }
 }

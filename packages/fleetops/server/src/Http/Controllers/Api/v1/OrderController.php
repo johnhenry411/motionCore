@@ -28,6 +28,7 @@ use Fleetbase\FleetOps\Support\ResolvesOrderServiceStops;
 use Fleetbase\FleetOps\Support\Utils;
 use Fleetbase\Http\Controllers\Controller;
 use Fleetbase\Http\Resources\Comment as CommentResource;
+use Fleetbase\Models\Comment;
 use Fleetbase\Models\Company;
 use Fleetbase\Models\File;
 use Fleetbase\Models\Setting;
@@ -948,6 +949,10 @@ class OrderController extends Controller
             return response()->apiError('Order has already started.');
         }
 
+        if ($order->driver_assignment_status === 'pending') {
+            return response()->apiError('This order has not been accepted by the driver yet.');
+        }
+
         // if the order is adhoc and the parameter of `assign` is set with a valid driver id, assign the driver and continue
         if ($order->adhoc && $assignAdhocDriver && Str::startsWith($assignAdhocDriver, 'driver_')) {
             $order->assignDriver($assignAdhocDriver, true);
@@ -1009,6 +1014,75 @@ class OrderController extends Controller
 
         // update activity
         return $this->updateActivity($order, $updateActivityRequest);
+    }
+
+    /**
+     * The authenticated driver accepts a pending direct order assignment.
+     *
+     * @return \Fleetbase\Http\Resources\v1\Order
+     */
+    public function acceptAssignment(string $id, Request $request)
+    {
+        try {
+            $order = Order::findRecordOrFail($id, ['driverAssigned'], []);
+        } catch (ModelNotFoundException $exception) {
+            return response()->apiError('Order resource not found.', 404);
+        }
+
+        $driver = Driver::where('user_uuid', session('user'))->withoutGlobalScopes()->first();
+
+        if (!$driver || !$order->isDriver($driver)) {
+            return response()->apiError('You are not assigned to this order.', 403);
+        }
+
+        if ($order->driver_assignment_status !== 'pending') {
+            return response()->apiError('This order is not awaiting your acceptance.');
+        }
+
+        $order->driver_assignment_status       = 'accepted';
+        $order->driver_assignment_responded_at = now();
+        $order->save();
+
+        return new OrderResource($order->fresh(['driverAssigned', 'payload']));
+    }
+
+    /**
+     * The authenticated driver declines a pending direct order assignment,
+     * clearing the assignment so a dispatcher can reassign it.
+     *
+     * @return \Fleetbase\Http\Resources\v1\Order
+     */
+    public function declineAssignment(string $id, Request $request)
+    {
+        try {
+            $order = Order::findRecordOrFail($id, ['driverAssigned'], []);
+        } catch (ModelNotFoundException $exception) {
+            return response()->apiError('Order resource not found.', 404);
+        }
+
+        $driver = Driver::where('user_uuid', session('user'))->withoutGlobalScopes()->first();
+
+        if (!$driver || !$order->isDriver($driver)) {
+            return response()->apiError('You are not assigned to this order.', 403);
+        }
+
+        if ($order->driver_assignment_status !== 'pending') {
+            return response()->apiError('This order is not awaiting your acceptance.');
+        }
+
+        $order->driver_assignment_status       = 'declined';
+        $order->driver_assignment_responded_at = now();
+        $order->driver_assigned_uuid           = null;
+        $order->save();
+
+        Comment::publish([
+            'content'      => "{$driver->name} declined this order assignment.",
+            'subject_uuid' => $order->uuid,
+            'subject_type' => Order::class,
+            'author_uuid'  => session('user'),
+        ]);
+
+        return new OrderResource($order->fresh());
     }
 
     /**

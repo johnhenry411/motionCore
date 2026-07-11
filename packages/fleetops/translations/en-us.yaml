@@ -633,7 +633,9 @@ order:
       no-order-linked: No order is linked to this issue.
     fields:
         ad-hoc: Ad-Hoc
-        ad-hoc-help-text: Toggling Ad-Hoc will enable the order to intelligently ping drivers within the order pickup vicinity about the order allowing the first available driver to accept the order. This is an alternative to manually assigning the driver for real-time orders.
+        ad-hoc-help-text: Toggling Ad-Hoc will enable the order to intelligently ping drivers within the order pickup vicinity about the order, allowing the first available driver to accept the order, rather than assigning and waiting on one specific driver to accept.
+        pending-driver-acceptance: Pending Driver Acceptance
+        driver-declined-assignment: Driver Declined
         add-entity: Add Entity
         add-item-button: Add Item
         add-item-order: Add Item to Order

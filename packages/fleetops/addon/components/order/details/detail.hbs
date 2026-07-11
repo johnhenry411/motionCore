@@ -7,6 +7,12 @@
             {{#if @resource.adhoc}}
                 <Badge @hideStatusDot={{false}} @disableHumanize={{true}} @status="success">{{t "order.fields.ad-hoc"}}</Badge>
             {{/if}}
+            {{#if (eq @resource.driver_assignment_status "pending")}}
+                <Badge @hideStatusDot={{false}} @disableHumanize={{true}} @status="warning">{{t "order.fields.pending-driver-acceptance"}}</Badge>
+            {{/if}}
+            {{#if (eq @resource.driver_assignment_status "declined")}}
+                <Badge @hideStatusDot={{false}} @disableHumanize={{true}} @status="danger">{{t "order.fields.driver-declined-assignment"}}</Badge>
+            {{/if}}
         </div>
     </:title>
     <:default>

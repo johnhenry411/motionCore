@@ -60,8 +60,8 @@ class HandleOrderDispatched implements ShouldQueue
         $order->save();
         $order->flushAttributesCache();
 
-        /* if order is adhoc ping drivers within radius of pickup to accept order * */
-        if ($order->adhoc) {
+        /* if order is adhoc and has no driver assigned yet, ping drivers within radius of pickup to accept order */
+        if ($order->adhoc && !$order->hasDriverAssigned) {
             $order->load(['company']);
             $pickup   = $order->getPickupLocation();
             $distance = $order->getAdhocDistance();

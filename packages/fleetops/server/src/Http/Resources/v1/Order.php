@@ -88,6 +88,7 @@ class Order extends FleetbaseResource
             'started'                              => (bool) data_get($this, 'started', false),
             'adhoc'                                => (bool) data_get($this, 'adhoc', false),
             'adhoc_distance'                       => (int) $this->getAdhocDistance(),
+            'driver_assignment_status'             => $this->driver_assignment_status,
             'distance'                             => (int) $this->distance,
             'time'                                 => (int) $this->time,
             'transaction_amount'                   => $this->transaction_amount,

@@ -70,6 +70,15 @@ class Order extends Model
     protected $publicIdType = 'order';
 
     /**
+     * Transient flag a caller can set before save()/assignDriver() to bypass
+     * the driver-assignment acceptance gate, e.g. for the ad-hoc self-accept
+     * path where the driver's own action already constitutes consent.
+     *
+     * @var bool
+     */
+    public bool $skipAssignmentAcceptance = false;
+
+    /**
      * The attributes that can be queried.
      *
      * @var array
@@ -101,6 +110,9 @@ class Order extends Model
         'purchase_rate_uuid',
         'tracking_number_uuid',
         'driver_assigned_uuid',
+        'driver_assignment_status',
+        'driver_assignment_requested_at',
+        'driver_assignment_responded_at',
         'vehicle_assigned_uuid',
         'created_by_uuid',
         'updated_by_uuid',
@@ -213,6 +225,8 @@ class Order extends Model
         'scheduled_at'     => 'datetime',
         'dispatched_at'    => 'datetime',
         'started_at'       => 'datetime',
+        'driver_assignment_requested_at' => 'datetime',
+        'driver_assignment_responded_at' => 'datetime',
         // Orchestrator
         'required_skills'       => Json::class,
         'time_window_start'     => 'datetime',
@@ -457,6 +471,18 @@ class Order extends Model
     public function getAdhocDistance()
     {
         return $this->adhoc_distance ?? data_get($this, 'company.options.fleetops.adhoc_distance', 6000);
+    }
+
+    /**
+     * Whether a directly assigned driver must explicitly accept this order
+     * before it can proceed (e.g. be started). Ad-hoc broadcast orders have
+     * their own acceptance mechanism (the ping/accept flow) and are excluded.
+     *
+     * @return bool
+     */
+    public function requiresDriverAcceptance(): bool
+    {
+        return $this->adhoc !== true && data_get($this, 'company.options.fleetops.require_driver_acceptance', true) !== false;
     }
 
     /**
@@ -1640,9 +1666,10 @@ class Order extends Model
             $this->setRelation('driverAssigned', $driver);
         }
 
-        if (!$silent) {
-            $this->notifyDriverAssigned();
-        }
+        // Notification is handled exclusively by OrderObserver::updated() when
+        // driver_assigned_uuid changes -- calling notifyDriverAssigned() here too
+        // would double-fire it for every non-silent assignment.
+        $this->skipAssignmentAcceptance = $silent;
 
         $this->save();
 

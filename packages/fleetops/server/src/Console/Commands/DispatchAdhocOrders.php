@@ -101,8 +101,8 @@ class DispatchAdhocOrders extends Command
             ->withoutGlobalScopes()
             ->where(['adhoc' => 1, 'dispatched' => 1, 'started' => 0])
             ->whereBetween('dispatched_at', [
-                $now->subHours($expiryHours),   // not older than 72 hours
-                $now->subMinutes($intervalMinutes),
+                $now->copy()->subHours($expiryHours),   // not older than 72 hours
+                $now->copy()->subMinutes($intervalMinutes),
             ])
             ->where('created_at', '>=', $cutoffDate)
             ->whereNull('driver_assigned_uuid')

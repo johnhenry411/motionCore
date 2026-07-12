@@ -40,15 +40,18 @@ class ChatChannelController extends Controller
             'name'            => $name,
         ]);
 
-        // If participants provided add them
+        // If participants provided add them, skipping duplicates (either the
+        // same user listed more than once, or a user already a participant)
+        $addedUserUuids = [];
         foreach ($participants as $userId) {
             $user = User::where('public_id', $userId)->first();
-            if ($user) {
-                ChatParticipant::create([
+            if ($user && !in_array($user->uuid, $addedUserUuids)) {
+                ChatParticipant::firstOrCreate([
                     'company_uuid'      => session('company'),
                     'user_uuid'         => $user->uuid,
                     'chat_channel_uuid' => $chatChannel->uuid,
                 ]);
+                $addedUserUuids[] = $user->uuid;
             }
         }
 
@@ -203,8 +206,9 @@ class ChatChannelController extends Controller
             );
         }
 
-        // Create the new chat participant
-        $chatParticipant = ChatParticipant::create([
+        // Create the new chat participant, avoiding a duplicate row if this
+        // user is already a participant in the channel
+        $chatParticipant = ChatParticipant::firstOrCreate([
             'company_uuid'      => session('company'),
             'user_uuid'         => $participantUser->uuid,
             'chat_channel_uuid' => $chatChannel->uuid,

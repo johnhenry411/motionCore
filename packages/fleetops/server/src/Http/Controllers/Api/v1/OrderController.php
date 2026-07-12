@@ -1086,6 +1086,41 @@ class OrderController extends Controller
     }
 
     /**
+     * The authenticated driver declines an ad-hoc broadcast ping for this
+     * order (an unassigned order they were nearby-notified about). Records
+     * the driver so they aren't re-pinged for this same order again.
+     *
+     * @return \Fleetbase\Http\Resources\v1\Order
+     */
+    public function declinePing(string $id, Request $request)
+    {
+        try {
+            $order = Order::findRecordOrFail($id);
+        } catch (ModelNotFoundException $exception) {
+            return response()->apiError('Order resource not found.', 404);
+        }
+
+        $driver = Driver::where('user_uuid', session('user'))->withoutGlobalScopes()->first();
+
+        if (!$driver) {
+            return response()->apiError('Unable to resolve requesting driver.', 403);
+        }
+
+        if (!$order->adhoc || $order->hasDriverAssigned) {
+            return response()->apiError('This order is not an open ad-hoc ping.');
+        }
+
+        $declinedDriverUuids = $order->getMeta('declined_driver_uuids', []);
+
+        if (!in_array($driver->uuid, $declinedDriverUuids, true)) {
+            $declinedDriverUuids[] = $driver->uuid;
+            $order->updateMeta('declined_driver_uuids', $declinedDriverUuids);
+        }
+
+        return new OrderResource($order->fresh());
+    }
+
+    /**
      * Update an order activity.
      *
      * @return \Fleetbase\Http\Resources\v1\Order

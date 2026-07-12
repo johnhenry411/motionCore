@@ -171,6 +171,7 @@ Route::prefix(config('fleetops.api.routing.prefix'))->namespace('Fleetbase\Fleet
                 $router->post('{id}/start', 'OrderController@startOrder');
                 $router->post('{id}/accept-assignment', 'OrderController@acceptAssignment');
                 $router->post('{id}/decline-assignment', 'OrderController@declineAssignment');
+                $router->post('{id}/decline-ping', 'OrderController@declinePing');
                 $router->delete('{id}/cancel', 'OrderController@cancelOrder');
                 $router->match(['post', 'patch'], '{id}/update-activity', 'OrderController@updateActivity');
                 $router->post('{id}/complete', 'OrderController@completeOrder');

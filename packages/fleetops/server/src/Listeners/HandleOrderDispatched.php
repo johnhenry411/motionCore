@@ -69,7 +69,10 @@ class HandleOrderDispatched implements ShouldQueue
                 return;
             }
 
+            $declinedDriverUuids = $order->getMeta('declined_driver_uuids', []);
+
             $drivers = Driver::where(['status' => 'available', 'online' => 1])
+                ->when(!empty($declinedDriverUuids), fn ($q) => $q->whereNotIn('uuid', $declinedDriverUuids))
                 ->whereHas('company', function ($q) {
                     $q->whereHas('users', function ($q) {
                         $q->whereHas('driver', function ($q) {

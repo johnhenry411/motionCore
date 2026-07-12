@@ -125,12 +125,15 @@ class DispatchAdhocOrders extends Command
      */
     public function getNearbyDriversForOrder(Order $order, Point $pickup, int $distance, bool $testing = false): Collection
     {
+        $declinedDriverUuids = $order->getMeta('declined_driver_uuids', []);
+
         $driverQuery = Driver::query()
             ->where(['online' => 1])
             ->where(function ($q) use ($order) {
                 $q->where('company_uuid', $order->company_uuid)
                     ->orWhereHas('user', fn ($q) => $q->where('company_uuid', $order->company_uuid));
             })
+            ->when(!empty($declinedDriverUuids), fn ($q) => $q->whereNotIn('uuid', $declinedDriverUuids))
             ->whereNull('deleted_at')
             ->withoutGlobalScopes();
 

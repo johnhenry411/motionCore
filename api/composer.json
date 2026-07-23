@@ -81,7 +81,9 @@
         {
             "type": "path",
             "url": "../packages/fleetops",
-            "options": { "symlink": false }
+            "options": {
+                "symlink": true
+            }
         },
         {
             "type": "path",
@@ -91,7 +93,9 @@
         {
             "type": "path",
             "url": "../packages/storefront",
-            "options": { "symlink": false }
+            "options": {
+                "symlink": true
+            }
         },
         {
             "type": "path",

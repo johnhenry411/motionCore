@@ -119,7 +119,7 @@ COPY --chown=www-data:www-data ./api/composer.json ./api/composer.lock /fleetbas
 # `composer install` alone would use composer.lock's recorded dist (a public Packagist/GitHub
 # zipball) instead of the local path, so these packages are always re-resolved via a scoped
 # `composer update` to guarantee the local source is what actually gets built.
-RUN su www-data -s /bin/sh -c "composer update fleetbase/core-api fleetbase/ai fleetbase/fleetops-api fleetbase/customer-portal-api fleetbase/storefront-api fleetbase/ledger-api fleetbase/valhalla-api fleetbase/vroom-api --with-dependencies --no-scripts --optimize-autoloader --no-dev --no-cache"
+RUN su www-data -s /bin/sh -c "composer update fleetbase/core-api fleetbase/ai fleetbase/fleetops-api fleetbase/customer-portal-api fleetbase/storefront-api fleetbase/ledger-api fleetbase/valhalla-api fleetbase/vroom-api --with-all-dependencies --no-scripts --optimize-autoloader --no-dev --no-cache"
 
 # Setup application
 COPY --chown=www-data:www-data ./api /fleetbase/api

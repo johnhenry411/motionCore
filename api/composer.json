@@ -71,12 +71,16 @@
         {
             "type": "path",
             "url": "../packages/core-api",
-            "options": { "symlink": false }
+            "options": {
+                "symlink": false
+            }
         },
         {
             "type": "path",
             "url": "../packages/ai",
-            "options": { "symlink": false }
+            "options": {
+                "symlink": false
+            }
         },
         {
             "type": "path",
@@ -88,29 +92,37 @@
         {
             "type": "path",
             "url": "../packages/customer-portal",
-            "options": { "symlink": false }
+            "options": {
+                "symlink": false
+            }
         },
         {
             "type": "path",
             "url": "../packages/storefront",
             "options": {
-                "symlink": true
+                "symlink": false
             }
         },
         {
             "type": "path",
             "url": "../packages/ledger",
-            "options": { "symlink": false }
+            "options": {
+                "symlink": false
+            }
         },
         {
             "type": "path",
             "url": "../packages/valhalla",
-            "options": { "symlink": false }
+            "options": {
+                "symlink": false
+            }
         },
         {
             "type": "path",
             "url": "../packages/vroom",
-            "options": { "symlink": false }
+            "options": {
+                "symlink": false
+            }
         },
         {
             "type": "composer",

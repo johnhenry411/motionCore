@@ -1,6 +1,5 @@
 packages:
   - "../packages/fleetops"
-  - "../packages/storefront"
 linkWorkspacePackages: deep
 preferWorkspacePackages: true
 publicHoistPattern:

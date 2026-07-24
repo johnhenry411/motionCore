@@ -112,6 +112,12 @@ COPY --chown=www-data:www-data ./packages /fleetbase/packages
 # Optimize Composer Dependency Installation
 COPY --chown=www-data:www-data ./api/composer.json ./api/composer.lock /fleetbase/api/
 
+# fleetbase/fleetops-api ^0.6.57 hard-requires barryvdh/laravel-dompdf ^2.0, and every
+# dompdf/dompdf 2.x release is flagged by Packagist's security-advisory feed, which blocks
+# composer from resolving to any of them. Ignore just those advisory IDs so resolution can
+# proceed; this doesn't change what dompdf version actually gets installed.
+RUN su www-data -s /bin/sh -c "composer config --json policy.advisories.ignore-id '[\"PKSA-cv56-2228-pzr6\",\"PKSA-6r8f-nxsb-67bq\",\"PKSA-gh7h-hhy4-byg7\",\"PKSA-mwt3-h9tv-kx78\",\"PKSA-hp6n-n4kz-21wk\",\"PKSA-mckv-s5hg-868k\",\"PKSA-7ztm-rpt3-qqzk\",\"PKSA-2kw5-jd8w-5mvh\",\"PKSA-4jrs-y99s-q8j6\",\"PKSA-hbk6-2vfz-8f8n\"]'"
+
 # Pre-install Composer dependencies
 # fleetbase/core-api, ai, fleetops-api, customer-portal-api, storefront-api, ledger-api,
 # valhalla-api, and vroom-api are resolved via local "path" repositories (see api/composer.json)
@@ -119,7 +125,7 @@ COPY --chown=www-data:www-data ./api/composer.json ./api/composer.lock /fleetbas
 # `composer install` alone would use composer.lock's recorded dist (a public Packagist/GitHub
 # zipball) instead of the local path, so these packages are always re-resolved via a scoped
 # `composer update` to guarantee the local source is what actually gets built.
-RUN su www-data -s /bin/sh -c "composer update fleetbase/core-api fleetbase/ai fleetbase/fleetops-api fleetbase/customer-portal-api fleetbase/storefront-api fleetbase/ledger-api fleetbase/valhalla-api fleetbase/vroom-api --with-all-dependencies --no-scripts --optimize-autoloader --no-dev --no-cache"
+RUN su www-data -s /bin/sh -c "composer update fleetbase/core-api fleetbase/ai fleetbase/fleetops-api fleetbase/customer-portal-api fleetbase/storefront-api fleetbase/ledger-api fleetbase/valhalla-api fleetbase/vroom-api --with-dependencies --no-scripts --optimize-autoloader --no-dev --no-cache"
 
 # Setup application
 COPY --chown=www-data:www-data ./api /fleetbase/api

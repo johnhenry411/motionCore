@@ -90,6 +90,18 @@ class CheckoutOrdersSeeder extends Seeder
         $orderUuids       = $this->seededUuids(Order::class);
         $transactionUuids = $this->seededUuids(Transaction::class);
 
+        // Null out checkouts/carts' references to fleetbase-side rows before purging those
+        // rows, otherwise the FK constraints on checkouts.order_uuid/service_quote_uuid abort
+        // the deletes below.
+        DB::connection($this->storefrontConnection())->table('carts')
+            ->whereIn('uuid', $cartUuids)
+            ->orWhereIn('checkout_uuid', $checkoutUuids)
+            ->update(['checkout_uuid' => null]);
+        DB::connection($this->storefrontConnection())->table('checkouts')
+            ->whereIn('uuid', $checkoutUuids)
+            ->orWhereIn('cart_uuid', $cartUuids)
+            ->update(['cart_uuid' => null, 'order_uuid' => null, 'service_quote_uuid' => null]);
+
         $this->purgeSeededLedgerJournals($orderUuids);
         $this->deleteFrom($this->fleetbaseConnection(), 'transaction_items', fn ($query) => $query->whereIn('transaction_uuid', $transactionUuids)->orWhere('meta->seed', static::SEED_NAME));
         $this->purgeModel(Entity::class);
@@ -98,15 +110,6 @@ class CheckoutOrdersSeeder extends Seeder
         $this->purgeModel(Payload::class);
         $this->purgeModel(Transaction::class);
         $this->purgeModel(Place::class);
-
-        DB::connection($this->storefrontConnection())->table('carts')
-            ->whereIn('uuid', $cartUuids)
-            ->orWhereIn('checkout_uuid', $checkoutUuids)
-            ->update(['checkout_uuid' => null]);
-        DB::connection($this->storefrontConnection())->table('checkouts')
-            ->whereIn('uuid', $checkoutUuids)
-            ->orWhereIn('cart_uuid', $cartUuids)
-            ->update(['cart_uuid' => null, 'order_uuid' => null]);
 
         $this->deleteFrom($this->storefrontConnection(), 'carts', fn ($query) => $query->whereIn('uuid', $cartUuids));
         $this->deleteFrom($this->storefrontConnection(), 'checkouts', fn ($query) => $query->whereIn('uuid', $checkoutUuids));

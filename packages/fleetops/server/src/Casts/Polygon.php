@@ -34,7 +34,7 @@ class Polygon implements CastsAttributes
         if ($value instanceof GeometryInterface) {
             $model->geometries[$key] = $value;
 
-            return $value;
+            return new SpatialExpression($value);
         }
 
         if ($value instanceof SpatialPolygon) {

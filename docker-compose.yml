@@ -123,7 +123,6 @@ services:
       SESSION_DOMAIN: localhost
       BROADCAST_DRIVER: socketcluster
       MAIL_FROM_NAME: Fleetbase
-      APP_NAME: Fleetbase
       LOG_CHANNEL: daily
       REGISTRY_HOST: https://registry.fleetbase.io
       REGISTRY_PREINSTALLED_EXTENSIONS: "true"

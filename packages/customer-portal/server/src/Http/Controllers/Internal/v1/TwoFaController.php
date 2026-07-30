@@ -15,11 +15,23 @@ class TwoFaController extends Controller
 {
     /**
      * Check customer two-factor authentication status.
+     *
+     * The customer portal client has no password login of its own -- identity
+     * + code IS the login mechanism, not an optional second factor on top of
+     * a password. So rather than requiring 2FA be toggled on beforehand (the
+     * `enabled` setting normally only reachable from inside an authenticated
+     * session), auto-enable it here on first use, per customer, defaulting
+     * the send method to whichever channel they just identified with.
      */
     public function checkTwoFactor(Request $request)
     {
         $identity = $request->input('identity');
-        $this->resolveCustomerByIdentity($identity);
+        $user     = $this->resolveCustomerByIdentity($identity);
+
+        if (!TwoFactorAuth::isEnabled($user)) {
+            $method = Str::contains($identity, '@') ? 'email' : 'sms';
+            TwoFactorAuth::saveTwoFaSettingsForUser($user, ['enabled' => true, 'method' => $method]);
+        }
 
         $twoFaSession   = TwoFactorAuth::createTwoFaSessionIfEnabled($identity);
         $isTwoFaEnabled = $twoFaSession !== null;
